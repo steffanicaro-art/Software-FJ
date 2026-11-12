@@ -6,12 +6,17 @@ from gestor import Gestor
 from excepciones import (
     DatosInvalidosError,
     ReservaInvalidaError,
-    ClienteNoEncontradoError
+    ClienteNoEncontradoError,
+    ServicioNoDisponibleError
 )
 
 def ejecutar_sistema():
 
     sistema = Gestor()
+
+    # Inicializar variables para evitar errores
+    cliente1 = None
+    reserva1 = None
 
     print("\n===================================")
     print("       SISTEMA SOFTWARE FJ")
@@ -51,7 +56,9 @@ def ejecutar_sistema():
 
     # OPERACION 4: Crear servicio de sala
     try:
-        sala = ReservaSala("S01", "Sala de reuniones", 50000)
+        sala = ReservaSala(
+            "S01", "Sala de reuniones", 50000
+        )
         sistema.registrar_servicio(sala)
         print("\nServicio de sala registrado")
 
@@ -60,7 +67,9 @@ def ejecutar_sistema():
 
     # OPERACION 5: Crear servicio de equipos
     try:
-        equipo = AlquilerEquipo("E01", "Computador", 30000)
+        equipo = AlquilerEquipo(
+            "E01", "Computador", 30000
+        )
         sistema.registrar_servicio(equipo)
         print("Servicio de equipos registrado")
 
@@ -69,7 +78,9 @@ def ejecutar_sistema():
 
     # OPERACION 6: Crear servicio de asesoria
     try:
-        asesoria = Asesoria("A01", "Asesoria tecnica", 80000)
+        asesoria = Asesoria(
+            "A01", "Asesoria tecnica", 80000
+        )
         sistema.registrar_servicio(asesoria)
         print("Servicio de asesoria registrado")
 
@@ -78,7 +89,9 @@ def ejecutar_sistema():
 
     # OPERACION 7: Intentar crear servicio invalido
     try:
-        servicio_invalido = ReservaSala("S02", "Sala", -500)
+        servicio_invalido = ReservaSala(
+            "S02", "Sala", -500
+        )
         sistema.registrar_servicio(servicio_invalido)
 
     except DatosInvalidosError as error:
@@ -91,20 +104,28 @@ def ejecutar_sistema():
         )
         print("\nReserva creada:", reserva1.codigo)
 
-    except (ReservaInvalidaError, ClienteNoEncontradoError) as error:
+    except (
+        ReservaInvalidaError,
+        ClienteNoEncontradoError,
+        ServicioNoDisponibleError
+    ) as error:
         print("Error:", error)
 
     # OPERACION 9: Procesar y confirmar reserva
     try:
-        reserva1.procesar()
-        print("Reserva confirmada correctamente")
+        if reserva1 is not None:
+            reserva1.procesar()
+            print("Reserva confirmada correctamente")
+        else:
+            print("No se puede procesar: reserva inexistente")
 
     except ReservaInvalidaError as error:
         print("Error:", error)
 
     # OPERACION 10: Intentar registrar cliente duplicado
     try:
-        sistema.registrar_cliente(cliente1)
+        if cliente1 is not None:
+            sistema.registrar_cliente(cliente1)
 
     except DatosInvalidosError as error:
         print("\nError controlado:", error)
@@ -115,18 +136,36 @@ def ejecutar_sistema():
             "R002", "9999", "S01", 1
         )
 
-    except (ReservaInvalidaError, ClienteNoEncontradoError) as error:
+    except (
+        ReservaInvalidaError,
+        ClienteNoEncontradoError,
+        ServicioNoDisponibleError
+    ) as error:
         print("Error controlado:", error)
 
     # OPERACION 12: Cancelar reserva
     try:
-        reserva1.cancelar()
-        print("\nReserva cancelada correctamente")
+        if reserva1 is not None:
+            reserva1.cancelar()
+            print("\nReserva cancelada correctamente")
 
     except ReservaInvalidaError as error:
         print("Error:", error)
 
-    # Mostrar informacion
+    # OPERACION 13: Intentar reservar con servicio inexistente
+    try:
+        sistema.crear_reserva(
+            "R003", "1001", "S99", 1
+        )
+
+    except (
+        ReservaInvalidaError,
+        ClienteNoEncontradoError,
+        ServicioNoDisponibleError
+    ) as error:
+        print("\nError controlado:", error)
+
+    # Mostrar informacion del sistema
     print("\n========== CLIENTES ==========")
     sistema.listar_clientes()
 
@@ -139,7 +178,6 @@ def ejecutar_sistema():
     print("\n===================================")
     print("   PRUEBAS DEL SISTEMA FINALIZADAS")
     print("===================================")
-
 
 if __name__ == "__main__":
     ejecutar_sistema()
