@@ -3,6 +3,8 @@
 import logging
 import os
 
+from cliente import Cliente
+from servicio import Servicio
 from reserva import Reserva
 from excepciones import (
     DatosInvalidosError,
@@ -21,6 +23,7 @@ logging.basicConfig(
     encoding="utf-8"
 )
 
+
 class Gestor:
 
     def __init__(self):
@@ -30,9 +33,12 @@ class Gestor:
 
     # Registrar clientes
     def registrar_cliente(self, cliente):
+        if not isinstance(cliente, Cliente):
+            raise DatosInvalidosError("Cliente no valido")
+
         if any(c.identificacion == cliente.identificacion
                for c in self.clientes):
-            logging.warning("Intento de registrar cliente duplicado")
+            logging.warning("Cliente duplicado")
             raise DatosInvalidosError("El cliente ya existe")
 
         self.clientes.append(cliente)
@@ -40,9 +46,12 @@ class Gestor:
 
     # Registrar servicios
     def registrar_servicio(self, servicio):
+        if not isinstance(servicio, Servicio):
+            raise DatosInvalidosError("Servicio no valido")
+
         if any(s.codigo == servicio.codigo
                for s in self.servicios):
-            logging.warning("Intento de registrar servicio duplicado")
+            logging.warning("Servicio duplicado")
             raise DatosInvalidosError("El servicio ya existe")
 
         self.servicios.append(servicio)
@@ -50,7 +59,8 @@ class Gestor:
 
     # Crear reservas
     def crear_reserva(self, codigo, identificacion,
-                      codigo_servicio, duracion):
+                      codigo_servicio, duracion,
+                      descuento=0, impuesto=0):
 
         try:
             cliente = next(
@@ -79,7 +89,8 @@ class Gestor:
                 )
 
             reserva = Reserva(
-                codigo, cliente, servicio, duracion
+                codigo, cliente, servicio, duracion,
+                descuento, impuesto
             )
 
             self.reservas.append(reserva)
@@ -88,7 +99,7 @@ class Gestor:
             ClienteNoEncontradoError,
             ServicioNoDisponibleError,
             ReservaInvalidaError
-        ) as error:
+        ):
             logging.exception("Error al crear la reserva")
             raise
 
@@ -103,7 +114,9 @@ class Gestor:
             return reserva
 
         finally:
-            logging.info("Finalizo el proceso de creacion de reserva")
+            logging.info(
+                "Finalizo el proceso de creacion de reserva"
+            )
 
     # Consultar clientes
     def listar_clientes(self):
