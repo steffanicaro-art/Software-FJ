@@ -3,11 +3,10 @@
 from entidad import Entidad
 from excepciones import DatosInvalidosError
 
+
 class Cliente(Entidad):
 
     def __init__(self, identificacion, nombre, telefono, correo):
-        super().__init__(identificacion)
-
         if not isinstance(identificacion, str) or not identificacion.strip():
             raise DatosInvalidosError("Identificacion obligatoria")
 
@@ -19,6 +18,8 @@ class Cliente(Entidad):
 
         if not isinstance(correo, str) or "@" not in correo or "." not in correo:
             raise DatosInvalidosError("Correo electronico incorrecto")
+
+        super().__init__(identificacion.strip())
 
         self.__nombre = nombre.strip()
         self.__telefono = telefono
@@ -37,4 +38,9 @@ class Cliente(Entidad):
         return self.__correo
 
     def mostrar_info(self):
-        return (f"ID: {self.identificacion} | "f"Nombre: {self.__nombre} | "f"Telefono: {self.__telefono} | "f"Correo: {self.__correo}")
+        return (
+            f"ID: {self.identificacion} | "
+            f"Nombre: {self.__nombre} | "
+            f"Telefono: {self.__telefono} | "
+            f"Correo: {self.__correo}"
+        )
