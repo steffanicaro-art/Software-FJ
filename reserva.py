@@ -15,13 +15,14 @@ class Reserva:
                 or isinstance(duracion, bool) or duracion <= 0):
             raise ReservaInvalidaError("Duracion incorrecta")
 
-        if not hasattr(cliente, "nombre"):
+        if not isinstance(getattr(cliente, "nombre", None), str):
             raise ReservaInvalidaError("Cliente no valido")
 
-        if not callable(getattr(servicio, "calcular_costo", None)):
+        if (not isinstance(getattr(servicio, "nombre", None), str)
+                or not callable(getattr(servicio, "calcular_costo", None))):
             raise ReservaInvalidaError("Servicio no valido")
 
-        self.__codigo = codigo
+        self.__codigo = codigo.strip()
         self.__cliente = cliente
         self.__servicio = servicio
         self.__duracion = duracion
@@ -31,14 +32,13 @@ class Reserva:
             self.__costo = servicio.calcular_costo(
                 duracion, descuento, impuesto
             )
-
         except Exception as error:
             logging.exception("Error al calcular el costo")
             raise ReservaInvalidaError(
                 "No fue posible calcular el costo"
             ) from error
 
-        logging.info("Reserva creada: %s", codigo)
+        logging.info("Reserva creada: %s", self.__codigo)
 
     @property
     def codigo(self):
@@ -56,7 +56,6 @@ class Reserva:
     def duracion(self):
         return self.__duracion
 
-    # Confirmar reserva
     def confirmar(self):
         if self.__estado != "Pendiente":
             raise ReservaInvalidaError(
@@ -66,7 +65,6 @@ class Reserva:
         self.__estado = "Confirmada"
         logging.info("Reserva %s confirmada", self.__codigo)
 
-    # Cancelar reserva
     def cancelar(self):
         if self.__estado == "Cancelada":
             raise ReservaInvalidaError(
@@ -76,7 +74,6 @@ class Reserva:
         self.__estado = "Cancelada"
         logging.info("Reserva %s cancelada", self.__codigo)
 
-    # Procesar reserva
     def procesar(self):
         try:
             if self.__estado != "Pendiente":
@@ -84,20 +81,18 @@ class Reserva:
                     "La reserva no esta pendiente"
                 )
 
+            self.confirmar()
+            logging.info("Reserva procesada correctamente")
+
         except ReservaInvalidaError:
             logging.exception("Error al procesar la reserva")
             raise
-
-        else:
-            self.confirmar()
-            logging.info("Reserva procesada correctamente")
 
         finally:
             logging.info(
                 "Finalizo el procesamiento de la reserva"
             )
 
-    # Mostrar informacion
     def mostrar_info(self):
         return (
             f"Reserva: {self.__codigo} | "
