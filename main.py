@@ -100,7 +100,7 @@ def ejecutar_sistema():
     # OPERACION 8: Crear reserva correctamente
     try:
         reserva1 = sistema.crear_reserva(
-            "R001", "1001", "S01", 2
+            "R001", "1001", "S01", 2, 10, 19
         )
         print("\nReserva creada:", reserva1.codigo)
 
